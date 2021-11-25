@@ -9,6 +9,5 @@ namespace AuthServer.Core.Models
 {
    public class UserApp:IdentityUser
     {
-
     }
 }
