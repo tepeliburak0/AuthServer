@@ -7,6 +7,7 @@ using AuthServer.Data;
 using AuthServer.Data.Repositories;
 using AuthServer.Service.Services;
 using AuthServer.SharedLibrary.Configuration;
+using FluentValidation.AspNetCore;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.HttpsPolicy;
@@ -58,7 +59,10 @@ namespace AuthServer.API
 
             services.Configure<CustomTokenOption>(Configuration.GetSection("TokenOption"));
             services.Configure<List<Client>>(Configuration.GetSection("Clients"));
-            services.AddControllers();
+            services.AddControllers().AddFluentValidation(optipons =>
+            {
+                optipons.RegisterValidatorsFromAssemblyContaining<Startup>();
+            });
             services.AddSwaggerGen(c =>
             {
                 c.SwaggerDoc("v1", new OpenApiInfo { Title = "AuthServer.API", Version = "v1" });
