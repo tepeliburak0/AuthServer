@@ -11,39 +11,56 @@ namespace AuthServer.Data.Repositories
 {
     public class GenericRepository<TEntity> : IGenericRepository<TEntity> where TEntity : class
     {
+
         private readonly DbContext _context;
+        private readonly DbSet<TEntity> _dbSet;
+
         public GenericRepository(AppDbContext context)
         {
             _context = context;
-        }
-        public  Task AddAsync(TEntity entity)
-        {
-            throw new NotImplementedException();
+            _dbSet = context.Set<TEntity>();
         }
 
-        public Task<IEnumerable<TEntity>> GetAllAsync()
+        public async Task AddAsync(TEntity entity)
         {
-            throw new NotImplementedException();
+            await _dbSet.AddAsync(entity);
         }
 
-        public Task<TEntity> GetByIdAsyc(int id)
+        public async Task<IEnumerable<TEntity>> GetAllAsync()
         {
-            throw new NotImplementedException();
+            return await _dbSet.ToListAsync();
+        }
+
+
+
+        public async Task<TEntity> GetByIdAsync(int id)
+        {
+            var entity = await _dbSet.FindAsync(id);
+            // EntityState.Detached yapısını service class'sını anlatırken detaylandıracağım.
+            if (entity != null)
+            {
+                _context.Entry(entity).State = EntityState.Detached;
+            }
+
+            return entity;
         }
 
         public void Remove(TEntity entity)
         {
-            throw new NotImplementedException();
+            _dbSet.Remove(entity);
         }
 
         public TEntity Update(TEntity entity)
         {
-            throw new NotImplementedException();
+            _context.Entry(entity).State = EntityState.Modified;
+
+            return entity;
         }
 
         public IQueryable<TEntity> Where(Expression<Func<TEntity, bool>> predicate)
         {
-            throw new NotImplementedException();
+            return _dbSet.Where(predicate);
         }
+
     }
 }

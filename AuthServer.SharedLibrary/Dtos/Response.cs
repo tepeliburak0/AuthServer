@@ -34,10 +34,10 @@ namespace AuthServer.SharedLibrary.Dtos
             };
         }
 
-        public static Response<T>Fail(string errorMassage,int statusCode,bool isShow)
+        public static Response<T> Fail(string errorMassage,int statusCode,bool isShow)
         {
             var errorDto = new ErrorDto(errorMassage, isShow);
-            return new Response<T> { Error = errorDto, StatusCode = statusCode,IsSuccessful=false };
+            return new Response<T> { Error = errorDto, StatusCode = statusCode};
         }
 
     }

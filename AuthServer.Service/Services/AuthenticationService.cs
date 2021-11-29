@@ -24,7 +24,7 @@ namespace AuthServer.Service.Services
         private readonly IGenericRepository<UserRefreshToken> _userRefreshToken;
         private readonly IUnitOfWork _unitOfWork;
 
-        public AuthenticationService(IOptions<List<Client>> optionsClient,ITokenService tokenService,UserManager<UserApp> userManager,IGenericRepository<UserRefreshToken> userRefreshToken,IUnitOfWork unitOfWork)
+        public AuthenticationService(IOptions<List<Client>> optionsClient, ITokenService tokenService, UserManager<UserApp> userManager, IGenericRepository<UserRefreshToken> userRefreshToken, IUnitOfWork unitOfWork)
         {
             _clients = optionsClient.Value;
             _tokenService = tokenService;
@@ -35,11 +35,19 @@ namespace AuthServer.Service.Services
 
         public async Task<Response<TokenDto>> CreateTokenAsync(LoginDto loginDto)
         {
-            if (loginDto==null) throw new ArgumentNullException(nameof(loginDto));
-            
-            var user = await _userManager.FindByNameAsync(loginDto.Email);
-            if (user==null) return Response<TokenDto>.Fail("Email or Password is wrong", 400, true);
-            if(!await _userManager.CheckPasswordAsync(user,loginDto.Password)) return Response<TokenDto>.Fail("Email or Password is wrong", 400, true);
+            if (loginDto == null)
+            {
+                throw new ArgumentNullException(nameof(loginDto));
+            }
+            var user = await _userManager.FindByEmailAsync(loginDto.Email);
+            if (user == null)
+            {
+                return Response<TokenDto>.Fail("Email or Password is wrong", 400, true);
+            }
+            if (!await _userManager.CheckPasswordAsync(user, loginDto.Password))
+            {
+                return Response<TokenDto>.Fail("Email or Password is wrong", 400, true);
+            }
             var token = _tokenService.CreateToken(user);
             var userRefreshToken = await _userRefreshToken.Where(x => x.UserId == user.Id).SingleOrDefaultAsync();
             if (userRefreshToken == null)
@@ -69,13 +77,13 @@ namespace AuthServer.Service.Services
         public async Task<Response<TokenDto>> CreateTokenByRefreshToken(string refreshToken)
         {
             var existRefreshToken = await _userRefreshToken.Where(x => x.RefreshTokenCode == refreshToken).SingleOrDefaultAsync();
-            if (existRefreshToken==null)
+            if (existRefreshToken == null)
             {
                 return Response<TokenDto>.Fail("Refresh token not found", 404, true);
 
             }
             var user = await _userManager.FindByIdAsync(existRefreshToken.UserId);
-            if (user==null)
+            if (user == null)
             {
                 return Response<TokenDto>.Fail("User ıd not found", 404, true);
 
@@ -93,7 +101,7 @@ namespace AuthServer.Service.Services
         public async Task<Response<NoDataDto>> RevokeRefreshToken(string refreshToken)
         {
             var existRefreshToken = await _userRefreshToken.Where(x => x.RefreshTokenCode == refreshToken).SingleOrDefaultAsync();
-            if (existRefreshToken==null)
+            if (existRefreshToken == null)
             {
                 return Response<NoDataDto>.Fail("Refresh token not found", 404, true);
             }
